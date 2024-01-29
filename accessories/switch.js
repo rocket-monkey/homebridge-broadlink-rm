@@ -3,6 +3,7 @@ const delayForDuration = require("../helpers/delayForDuration");
 const catchDelayCancelError = require("../helpers/catchDelayCancelError");
 const ping = require("../helpers/ping");
 const arp = require("../helpers/arp");
+const sleep = require("../helpers/sleep");
 const BroadlinkRMAccessory = require("./accessory");
 
 class SwitchAccessory extends BroadlinkRMAccessory {
@@ -11,6 +12,26 @@ class SwitchAccessory extends BroadlinkRMAccessory {
 
     if (!config.isUnitTest) {
       this.checkPing(ping);
+    }
+  }
+
+  async exec() {
+    const {
+      config: { data },
+    } = this;
+    const hex = Array.isArray(data) ? data[0].data : null;
+    const sendCount = Array.isArray(data) ? data[0].sendCount : 0;
+    if (sendCount > 0 && hex) {
+      for (let index = 0; index < sendCount; index++) {
+        this.setSwitchState(hex, true);
+        if (index < sendCount - 1) {
+          await sleep(300);
+        }
+      }
+      return;
+    }
+    if (hex) {
+      return this.setSwitchState(hex);
     }
   }
 
@@ -116,7 +137,7 @@ class SwitchAccessory extends BroadlinkRMAccessory {
     serviceManager.setCharacteristic(Characteristic.On, value);
   }
 
-  async setSwitchState(hexData) {
+  async setSwitchState(hexData, earlyReturn = false) {
     const { data, host, log, name, logLevel, config, state, serviceManager } =
       this;
     this.stateChangeInProgress = true;
@@ -130,6 +151,9 @@ class SwitchAccessory extends BroadlinkRMAccessory {
       state.switchState = false;
       serviceManager.refreshCharacteristicUI(Characteristic.On);
     } else {
+      if (earlyReturn) {
+        return;
+      }
       this.checkAutoOnOff();
     }
   }

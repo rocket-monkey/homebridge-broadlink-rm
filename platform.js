@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 const { HomebridgePlatform } = require("./base");
 const { assert } = require("chai");
 
@@ -7,6 +8,7 @@ const checkForUpdates = require("./helpers/checkForUpdates");
 const broadlink = require("./helpers/broadlink");
 const { discoverDevices } = require("./helpers/getDevice");
 const { createAccessory } = require("./helpers/accessoryCreator");
+const http = require("http");
 
 const classTypes = {
   "air-conditioner": Accessory.AirCon,
@@ -37,6 +39,7 @@ let homebridgeRef;
 const BroadlinkRMPlatform = class extends HomebridgePlatform {
   constructor(log, config = {}) {
     super(log, config, homebridgeRef);
+    this.instances = [];
   }
 
   addAccessories(accessories) {
@@ -45,6 +48,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
     this.discoverBroadlinkDevices();
     this.showMessage();
     setTimeout(() => checkForUpdates(log), 1800);
+    this.createHttpService();
 
     if (!config.accessories) {
       config.accessories = [];
@@ -54,9 +58,9 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
     const learnIRAccessories =
       config && config.accessories && Array.isArray(config.accessories)
         ? config.accessories.filter(
-          (accessory) =>
-            accessory.type === "learn-ir" || accessory.type === "learn-code",
-        )
+            (accessory) =>
+              accessory.type === "learn-ir" || accessory.type === "learn-code",
+          )
         : [];
 
     if (learnIRAccessories.length === 0) {
@@ -124,6 +128,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
           `\x1b[34m[DEBUG]\x1b[0m Adding Accessory ${accessory.type} (${accessory.subType})`,
         );
       }
+      this.instances.push(homeKitAccessory);
       accessories.push(homeKitAccessory);
     });
 
@@ -207,6 +212,62 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
 
       broadlink.addDevice({ address, port: 80 }, mac.toLowerCase(), deviceType);
     });
+  }
+
+  createHttpService() {
+    this.requestServer = http.createServer((req, res) => {
+      // Set CORS headers
+      res.setHeader("Access-Control-Allow-Origin", "*"); // This allows all origins
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "X-Requested-With,content-type",
+      );
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+
+      // Handle preflight OPTIONS request
+      if (req.method === "OPTIONS") {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+
+      this.handleRequest(req, res);
+    });
+    this.requestServer.listen(18084, () =>
+      this.log.info("Http server listening on 18084..."),
+    );
+  }
+
+  async handleRequest(request, response) {
+    try {
+      if (request.url.includes("/exec")) {
+        const [_url, query] = request.url ? request.url.split("?") : [];
+        const nameRaw = query ? query.replace("name=", "") : "";
+        let decoded = decodeURIComponent(nameRaw);
+        // replace _all_ %20 with spaces
+        decoded = decoded.replace(/%20/g, " ");
+
+        const instance = this.instances.find((i) => {
+          return i.config.name === decoded;
+        });
+        if (instance) {
+          await instance.exec();
+        } else {
+          this.log.error("Could not find instance for name:", decoded);
+        }
+      }
+
+      response.writeHead(204); // 204 No content
+      response.end();
+    } catch (e) {
+      this.log.error(e);
+      response.writeHead(500);
+      response.end();
+    }
   }
 
   showMessage() {
