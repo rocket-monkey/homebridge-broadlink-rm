@@ -1,6 +1,8 @@
-const WindowCoveringAccessory = require('./windowCovering');
+const WindowCoveringAccessory = require("./windowCovering");
 
 class WindowAccessory extends WindowCoveringAccessory {
-  serviceType () { return Service.Window }
+  serviceType() {
+    return Service.Window;
+  }
 }
 module.exports = WindowAccessory;

@@ -1,15 +1,17 @@
-const ServiceManagerTypes = require('../helpers/serviceManagerTypes');
-const BroadlinkRMAccessory = require('./accessory');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError');
-const delayForDuration = require('../helpers/delayForDuration');
-const ping = require('../helpers/ping');
-const arp = require('../helpers/arp')
+const ServiceManagerTypes = require("../helpers/serviceManagerTypes");
+const BroadlinkRMAccessory = require("./accessory");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
+const delayForDuration = require("../helpers/delayForDuration");
+const ping = require("../helpers/ping");
+const arp = require("../helpers/arp");
 
 class FanAccessory extends BroadlinkRMAccessory {
   constructor(log, config = {}, serviceManagerType) {
     super(log, config, serviceManagerType);
 
-    if (!config.isUnitTest) {this.checkPing(ping);}
+    if (!config.isUnitTest) {
+      this.checkPing(ping);
+    }
   }
 
   setDefaults() {
@@ -21,16 +23,27 @@ class FanAccessory extends BroadlinkRMAccessory {
     config.onDuration = config.onDuration || 60;
 
     // Defaults
-    config.showSwingMode = config.hideSwingMode === true || config.showSwingMode === false ? false : true;
-    config.showRotationDirection = config.hideRotationDirection === true || config.showRotationDirection === false ? false : true;
-    config.stepSize = isNaN(config.stepSize) || config.stepSize > 100 || config.stepSize < 1 ? 1 : config.stepSize;
+    config.showSwingMode =
+      config.hideSwingMode === true || config.showSwingMode === false
+        ? false
+        : true;
+    config.showRotationDirection =
+      config.hideRotationDirection === true ||
+      config.showRotationDirection === false
+        ? false
+        : true;
+    config.stepSize =
+      isNaN(config.stepSize) || config.stepSize > 100 || config.stepSize < 1
+        ? 1
+        : config.stepSize;
 
     if (config.speedSteps) {
       config.stepSize = Math.floor(100 / config.speedSteps);
     }
 
     if (config.alwaysResetToDefaults) {
-      state.fanSpeed = (config.defaultFanSpeed !== undefined) ? config.defaultFanSpeed : 100;
+      state.fanSpeed =
+        config.defaultFanSpeed !== undefined ? config.defaultFanSpeed : 100;
 
       if (config.defaultSpeedStep && config.stepSize) {
         state.fanSpeed = config.defaultSpeedStep * config.stepSize;
@@ -64,7 +77,9 @@ class FanAccessory extends BroadlinkRMAccessory {
       this.pingGraceTimeout = null;
     }
 
-    if (this.serviceManager.getCharacteristic(Characteristic.Active) === undefined) {
+    if (
+      this.serviceManager.getCharacteristic(Characteristic.Active) === undefined
+    ) {
       this.serviceManager.setCharacteristic(Characteristic.Active, false);
     }
   }
@@ -80,17 +95,22 @@ class FanAccessory extends BroadlinkRMAccessory {
     const { config } = this;
     let { pingIPAddress, pingFrequency, pingUseArp } = config;
 
-    if (!pingIPAddress) {return;}
+    if (!pingIPAddress) {
+      return;
+    }
 
     // Setup Ping/Arp-based State
-    if(!pingUseArp) {ping(pingIPAddress, pingFrequency, this.pingCallback.bind(this))}
-    else {arp(pingIPAddress, pingFrequency, this.pingCallback.bind(this))}
+    if (!pingUseArp) {
+      ping(pingIPAddress, pingFrequency, this.pingCallback.bind(this));
+    } else {
+      arp(pingIPAddress, pingFrequency, this.pingCallback.bind(this));
+    }
   }
 
   pingCallback(active) {
     const { config, state, serviceManager } = this;
 
-    if (this.stateChangeInProgress){
+    if (this.stateChangeInProgress) {
       return;
     }
 
@@ -116,14 +136,13 @@ class FanAccessory extends BroadlinkRMAccessory {
   //  this.checkAutoOnOff();
   //}
 
-  async checkPingGrace () {
+  async checkPingGrace() {
     await catchDelayCancelError(async () => {
       const { config, log, name, state, serviceManager } = this;
 
       let { pingGrace } = config;
 
       if (pingGrace) {
-
         this.pingGraceTimeoutPromise = delayForDuration(pingGrace);
         await this.pingGraceTimeoutPromise;
 
@@ -138,7 +157,11 @@ class FanAccessory extends BroadlinkRMAccessory {
       let { disableAutomaticOff, enableAutoOff, onDuration } = config;
 
       if (state.switchState && enableAutoOff) {
-        if (logLevel <= 2) {log(`${name} setSwitchState: (automatically turn off in ${onDuration} seconds)`);}
+        if (logLevel <= 2) {
+          log(
+            `${name} setSwitchState: (automatically turn off in ${onDuration} seconds)`,
+          );
+        }
 
         this.autoOffTimeoutPromise = delayForDuration(onDuration);
         await this.autoOffTimeoutPromise;
@@ -154,7 +177,11 @@ class FanAccessory extends BroadlinkRMAccessory {
       let { disableAutomaticOn, enableAutoOn, offDuration } = config;
 
       if (!state.switchState && enableAutoOn) {
-        if (logLevel <= 2) {log(`${name} setSwitchState: (automatically turn on in ${offDuration} seconds)`);}
+        if (logLevel <= 2) {
+          log(
+            `${name} setSwitchState: (automatically turn on in ${offDuration} seconds)`,
+          );
+        }
 
         this.autoOnTimeoutPromise = delayForDuration(offDuration);
         await this.autoOnTimeoutPromise;
@@ -177,12 +204,17 @@ class FanAccessory extends BroadlinkRMAccessory {
     // Reset the fan speed back to the default speed when turned off
     if (!state.switchState && config.alwaysResetToDefaults) {
       this.setDefaults();
-      serviceManager.setCharacteristic(Characteristic.RotationSpeed, state.fanSpeed);
+      serviceManager.setCharacteristic(
+        Characteristic.RotationSpeed,
+        state.fanSpeed,
+      );
     }
 
     this.reset();
 
-    if (hexData) {await this.performSend(hexData);}
+    if (hexData) {
+      await this.performSend(hexData);
+    }
   }
 
   async setFanSpeed(hexData) {
@@ -206,13 +238,18 @@ class FanAccessory extends BroadlinkRMAccessory {
     }
 
     if (foundSpeeds.length === 0) {
-
-      return log(`${name} setFanSpeed: No fan speed hex codes provided.`)
+      return log(`${name} setFanSpeed: No fan speed hex codes provided.`);
     }
 
     // Find speed closest to the one requested
-    const closest = foundSpeeds.reduce((prev, curr) => Math.abs(curr - state.fanSpeed) < Math.abs(prev - state.fanSpeed) ? curr : prev);
-    if (logLevel <= 2) {log(`${name} setFanSpeed: (closest: ${closest})`);}
+    const closest = foundSpeeds.reduce((prev, curr) =>
+      Math.abs(curr - state.fanSpeed) < Math.abs(prev - state.fanSpeed)
+        ? curr
+        : prev,
+    );
+    if (logLevel <= 2) {
+      log(`${name} setFanSpeed: (closest: ${closest})`);
+    }
 
     if (this.lastFanSpeed === closest) {
       return;
@@ -226,10 +263,10 @@ class FanAccessory extends BroadlinkRMAccessory {
       let fanSpeed = this.lastFanSpeed;
       hexData = [];
 
-      if (typeof fanSpeedHexData === 'string') {
+      if (typeof fanSpeedHexData === "string") {
         fanSpeedHexData = {
-          data: fanSpeedHexData
-        }
+          data: fanSpeedHexData,
+        };
       }
 
       if (fanSpeed > closest) {
@@ -260,12 +297,16 @@ class FanAccessory extends BroadlinkRMAccessory {
     const { config, data, name, serviceManagerType } = this;
     const { on, off, clockwise, counterClockwise, swingToggle } = data || {};
 
-    this.serviceManager = new ServiceManagerTypes[serviceManagerType](name, Service.Fanv2, this.log);
+    this.serviceManager = new ServiceManagerTypes[serviceManagerType](
+      name,
+      Service.Fanv2,
+      this.log,
+    );
 
     this.setDefaults();
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'switchState',
+      name: "switchState",
       type: Characteristic.Active,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
@@ -273,13 +314,13 @@ class FanAccessory extends BroadlinkRMAccessory {
       props: {
         onData: on,
         offData: off,
-        setValuePromise: this.setSwitchState.bind(this)
-      }
+        setValuePromise: this.setSwitchState.bind(this),
+      },
     });
 
     if (config.showSwingMode) {
       this.serviceManager.addToggleCharacteristic({
-        name: 'swingMode',
+        name: "swingMode",
         type: Characteristic.SwingMode,
         getMethod: this.getCharacteristicValue,
         setMethod: this.setCharacteristicValue,
@@ -287,13 +328,13 @@ class FanAccessory extends BroadlinkRMAccessory {
         props: {
           onData: swingToggle,
           offData: swingToggle,
-          setValuePromise: this.performSend.bind(this)
-        }
+          setValuePromise: this.performSend.bind(this),
+        },
       });
     }
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'fanSpeed',
+      name: "fanSpeed",
       type: Characteristic.RotationSpeed,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
@@ -302,20 +343,22 @@ class FanAccessory extends BroadlinkRMAccessory {
         setValuePromise: this.setFanSpeed.bind(this),
         minStep: config.stepSize,
         minValue: 0,
-        maxValue: 100
-      }
+        maxValue: 100,
+      },
     });
 
     // Add HAP properties for improved accessory representation in Homekit
-    this.serviceManager.getCharacteristic(Characteristic.RotationSpeed).setProps({
-      minStep: config.stepSize,
-      minValue: 0,
-      maxValue: 100
-    });
-    
+    this.serviceManager
+      .getCharacteristic(Characteristic.RotationSpeed)
+      .setProps({
+        minStep: config.stepSize,
+        minValue: 0,
+        maxValue: 100,
+      });
+
     if (config.showRotationDirection) {
       this.serviceManager.addToggleCharacteristic({
-        name: 'rotationDirection',
+        name: "rotationDirection",
         type: Characteristic.RotationDirection,
         getMethod: this.getCharacteristicValue,
         setMethod: this.setCharacteristicValue,
@@ -323,8 +366,8 @@ class FanAccessory extends BroadlinkRMAccessory {
         props: {
           onData: counterClockwise,
           offData: clockwise,
-          setValuePromise: this.performSend.bind(this)
-        }
+          setValuePromise: this.performSend.bind(this),
+        },
       });
     }
   }

@@ -1,22 +1,22 @@
-const delayForDuration = require('../helpers/delayForDuration');
-const BroadlinkRMAccessory = require('./accessory');
-const ServiceManagerTypes = require('../helpers/serviceManagerTypes');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError')
+const delayForDuration = require("../helpers/delayForDuration");
+const BroadlinkRMAccessory = require("./accessory");
+const ServiceManagerTypes = require("../helpers/serviceManagerTypes");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
 
 class LockAccessory extends BroadlinkRMAccessory {
-
-  correctReloadedState (state) {
+  correctReloadedState(state) {
     state.lockTargetState = state.lockCurrentState;
   }
 
-  setDefaults () {
+  setDefaults() {
     const { config } = this;
 
     config.lockDuration = config.lockDuration || config.lockUnlockDuration || 1;
-    config.unlockDuration = config.unlockDuration || config.lockUnlockDuration || 1;
+    config.unlockDuration =
+      config.unlockDuration || config.lockUnlockDuration || 1;
   }
 
-  reset () {
+  reset() {
     super.reset();
 
     // Clear existing timeouts
@@ -32,42 +32,47 @@ class LockAccessory extends BroadlinkRMAccessory {
 
     if (this.autoLockTimeoutPromise) {
       this.autoLockTimeoutPromise.cancel();
-      this.autoLockTimeoutPromise = null
+      this.autoLockTimeoutPromise = null;
     }
   }
 
-  async setLockTargetState (hexData, currentState) {
+  async setLockTargetState(hexData, currentState) {
     const { host, log, name, logLevel } = this;
 
     this.reset();
-    
+
     // Send pre-determined hex data
     await this.performSend(hexData);
 
     catchDelayCancelError(async () => {
       if (currentState === Characteristic.LockTargetState.SECURED) {
-        await this.unlock()
+        await this.unlock();
       } else {
-        await this.lock()
+        await this.lock();
       }
-    })
+    });
   }
 
-  async lock () {
-    const { config, data, host, log, name, state, logLevel, serviceManager } = this;
+  async lock() {
+    const { config, data, host, log, name, state, logLevel, serviceManager } =
+      this;
     let { lockDuration } = config;
 
     log(`${name} setLockCurrentState: locking for ${lockDuration}s`);
 
     this.lockingTimeoutPromise = delayForDuration(lockDuration);
-    await this.lockingTimeoutPromise
+    await this.lockingTimeoutPromise;
 
     log(`${name} setLockCurrentState: locked`);
-    serviceManager.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+    serviceManager.setCharacteristic(
+      Characteristic.LockCurrentState,
+      Characteristic.LockCurrentState.SECURED,
+    );
   }
 
-  async unlock (hexData) {
-    const { config, data, host, log, name, state, logLevel, serviceManager } = this;
+  async unlock(hexData) {
+    const { config, data, host, log, name, state, logLevel, serviceManager } =
+      this;
     let { autoLockDelay, unlockDuration } = config;
 
     log(`${name} setLockCurrentState: unlocking for ${unlockDuration}s`);
@@ -75,39 +80,47 @@ class LockAccessory extends BroadlinkRMAccessory {
     await this.unlockingTimeoutPromise;
 
     log(`${name} setLockCurrentState: unlocked`);
-    serviceManager.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+    serviceManager.setCharacteristic(
+      Characteristic.LockCurrentState,
+      Characteristic.LockCurrentState.UNSECURED,
+    );
 
     if (autoLockDelay) {
       log(`${name} automatically locking in ${autoLockDelay}s`);
       this.autoLockTimeoutPromise = delayForDuration(autoLockDelay);
       await this.autoLockTimeoutPromise;
 
-      serviceManager.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
-      this.lock()
+      serviceManager.setCharacteristic(
+        Characteristic.LockTargetState,
+        Characteristic.LockTargetState.SECURED,
+      );
+      this.lock();
     }
   }
-  
+
   // Service Manager Setup
 
-  setupServiceManager () {
+  setupServiceManager() {
     const { data, name, serviceManagerType } = this;
     const { lock, unlock } = data || {};
 
-    this.serviceManager = new ServiceManagerTypes[serviceManagerType](name, Service.LockMechanism, this.log);
+    this.serviceManager = new ServiceManagerTypes[serviceManagerType](
+      name,
+      Service.LockMechanism,
+      this.log,
+    );
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'lockCurrentState',
+      name: "lockCurrentState",
       type: Characteristic.LockCurrentState,
       bind: this,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
-      props: {
-
-      }
+      props: {},
     });
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'lockTargetState',
+      name: "lockTargetState",
       type: Characteristic.LockTargetState,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
@@ -115,8 +128,8 @@ class LockAccessory extends BroadlinkRMAccessory {
       props: {
         onData: lock,
         offData: unlock,
-        setValuePromise: this.setLockTargetState.bind(this)
-      }
+        setValuePromise: this.setLockTargetState.bind(this),
+      },
     });
   }
 }

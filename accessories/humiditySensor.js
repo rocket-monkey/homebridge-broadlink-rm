@@ -1,21 +1,20 @@
-const { assert } = require('chai');
-const uuid = require('uuid');
-const fs = require('fs');
-const findKey = require('find-key');
+const { assert } = require("chai");
+const uuid = require("uuid");
+const fs = require("fs");
+const findKey = require("find-key");
 
-const delayForDuration = require('../helpers/delayForDuration');
-const ServiceManagerTypes = require('../helpers/serviceManagerTypes');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError');
-const { getDevice } = require('../helpers/getDevice');
-const HumidifierAccessory = require('./humidifier-dehumidifier');
+const delayForDuration = require("../helpers/delayForDuration");
+const ServiceManagerTypes = require("../helpers/serviceManagerTypes");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
+const { getDevice } = require("../helpers/getDevice");
+const HumidifierAccessory = require("./humidifier-dehumidifier");
 
 class HumiditySensorAccessory extends HumidifierAccessory {
-
-  constructor (log, config = {}, serviceManagerType) {
+  constructor(log, config = {}, serviceManagerType) {
     super(log, config, serviceManagerType);
   }
 
-  setDefaults () {
+  setDefaults() {
     const { config, state } = this;
 
     // Set config default values
@@ -25,12 +24,12 @@ class HumiditySensorAccessory extends HumidifierAccessory {
     state.firstHumidityUpdate = true;
   }
 
-  reset () {
+  reset() {
     super.reset();
   }
 
   // Device Temperature Methods
-  async monitorHumidity () {
+  async monitorHumidity() {
     const { config, host, log, logLevel, name, state } = this;
 
     const device = getDevice({ host, log });
@@ -42,63 +41,88 @@ class HumiditySensorAccessory extends HumidifierAccessory {
       return;
     }
 
-    if (logLevel <=1) {log(`${name} monitorHumidity`);}
+    if (logLevel <= 1) {
+      log(`${name} monitorHumidity`);
+    }
 
     //Broadlink module emits 'temperature for both sensors.
-    device.on('temperature', this.onHumidity.bind(this));
+    device.on("temperature", this.onHumidity.bind(this));
     device.checkHumidity();
 
     this.updateHumidityUI();
-    if (!config.isUnitTest) {setInterval(this.updateHumidityUI.bind(this), config.humidityUpdateFrequency * 1000)}
+    if (!config.isUnitTest) {
+      setInterval(
+        this.updateHumidityUI.bind(this),
+        config.humidityUpdateFrequency * 1000,
+      );
+    }
   }
 
   //Method inhertied but not required
-  async updateDeviceState () { return;}
-  
-  getBatteryAlert (callback) {
+  async updateDeviceState() {
+    return;
+  }
+
+  getBatteryAlert(callback) {
     const { config, name, state, log, logLevel } = this;
 
-    const batteryAlert = state.batteryLevel <= 20? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-    if (logLevel <=1) {log(`\x1b[34m[DEBUG]\x1b[0m ${name} Battery Level:`,state.batteryLevel,'Alert:',batteryAlert);}
+    const batteryAlert =
+      state.batteryLevel <= 20
+        ? Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW
+        : Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    if (logLevel <= 1) {
+      log(
+        `\x1b[34m[DEBUG]\x1b[0m ${name} Battery Level:`,
+        state.batteryLevel,
+        "Alert:",
+        batteryAlert,
+      );
+    }
 
     callback(null, batteryAlert);
   }
-  
-  getBatteryLevel (callback) {
+
+  getBatteryLevel(callback) {
     const { config, name, state, log, logLevel } = this;
-    if (logLevel <=1) {log(`\x1b[34m[DEBUG]\x1b[0m ${name} Battery Level:`,state.batteryLevel);}
+    if (logLevel <= 1) {
+      log(`\x1b[34m[DEBUG]\x1b[0m ${name} Battery Level:`, state.batteryLevel);
+    }
     callback(null, parseFloat(state.batteryLevel));
   }
 
   // Service Manager Setup
-  setupServiceManager () {
+  setupServiceManager() {
     const { config, name, serviceManagerType } = this;
 
-    this.serviceManager = new ServiceManagerTypes[serviceManagerType](name, Service.HumiditySensor, this.log);
+    this.serviceManager = new ServiceManagerTypes[serviceManagerType](
+      name,
+      Service.HumiditySensor,
+      this.log,
+    );
 
     this.serviceManager.addGetCharacteristic({
-      name: 'currentHumidity',
+      name: "currentHumidity",
       type: Characteristic.CurrentRelativeHumidity,
       method: this.getCurrentHumidity,
-      bind: this
+      bind: this,
     });
 
-    if (config.batteryAlerts){
+    if (config.batteryAlerts) {
       this.serviceManager.addGetCharacteristic({
-        name: 'batteryAlert',
+        name: "batteryAlert",
         type: Characteristic.StatusLowBattery,
         method: this.getBatteryAlert,
-        bind: this
-      })
-      
+        bind: this,
+      });
+
       this.serviceManager.addGetCharacteristic({
-        name: 'batteryLevel',
+        name: "batteryLevel",
         type: Characteristic.BatteryLevel,
         method: this.getBatteryLevel,
-        bind: this
-      })
+        bind: this,
+      });
     }
   }
 }
 
-module.exports = HumiditySensorAccessory
+module.exports = HumiditySensorAccessory;

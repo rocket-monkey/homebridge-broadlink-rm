@@ -1,3 +1,3 @@
-const BroadlinkJS = require('kiwicam-broadlinkjs-rm');
+const BroadlinkJS = require("kiwicam-broadlinkjs-rm");
 
-module.exports = new BroadlinkJS()
+module.exports = new BroadlinkJS();

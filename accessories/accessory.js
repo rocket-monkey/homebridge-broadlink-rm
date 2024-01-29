@@ -1,70 +1,85 @@
-const uuid = require('uuid');
+const uuid = require("uuid");
 
-const { HomebridgeAccessory } = require('../base');
+const { HomebridgeAccessory } = require("../base");
 
-const sendData = require('../helpers/sendData');
-const delayForDuration = require('../helpers/delayForDuration');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError');
+const sendData = require("../helpers/sendData");
+const delayForDuration = require("../helpers/delayForDuration");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
 
 class BroadlinkRMAccessory extends HomebridgeAccessory {
-
-  constructor (log, config = {}, serviceManagerType) {
-    if (!config.name) {config.name = "Unknown Accessory"}
+  constructor(log, config = {}, serviceManagerType) {
+    if (!config.name) {
+      config.name = "Unknown Accessory";
+    }
 
     config.resendDataAfterReload = config.resendHexAfterReload;
     if (config.host) {
       //Clean up MAC address formatting
       config.host = config.host.toLowerCase();
-      if (!config.host.includes(".") && !config.host.includes(":") && config.host.length === 12){
-        config.host = config.host.match(/[\s\S]{1,2}/g).join(':');
+      if (
+        !config.host.includes(".") &&
+        !config.host.includes(":") &&
+        config.host.length === 12
+      ) {
+        config.host = config.host.match(/[\s\S]{1,2}/g).join(":");
       }
     }
 
     super(log, config, serviceManagerType);
-    if (config.debug) {this.debug = true}
+    if (config.debug) {
+      this.debug = true;
+    }
 
-    this.manufacturer = 'Broadlink';
-    this.model = 'RM Mini or Pro';
+    this.manufacturer = "Broadlink";
+    this.model = "RM Mini or Pro";
     this.serialNumber = uuid.v4();
 
     //Set LogLevel
-    switch(this.config.logLevel){
-      case 'none':
+    switch (this.config.logLevel) {
+      case "none":
         this.logLevel = 6;
         break;
-      case 'critical':
+      case "critical":
         this.logLevel = 5;
         break;
-      case 'error':
+      case "error":
         this.logLevel = 4;
         break;
-      case 'warning':
+      case "warning":
         this.logLevel = 3;
         break;
-      case 'info':
+      case "info":
         this.logLevel = 2;
         break;
-      case 'debug':
+      case "debug":
         this.logLevel = 1;
         break;
-      case 'trace':
+      case "trace":
         this.logLevel = 0;
         break;
       default:
         //default to 'info':
-        if(this.config.logLevel !== undefined) {log(`\x1b[31m[CONFIG ERROR] \x1b[33mlogLevel\x1b[0m should be one of: trace, debug, info, warning, error, critical, or none.`);}
+        if (this.config.logLevel !== undefined) {
+          log(
+            `\x1b[31m[CONFIG ERROR] \x1b[33mlogLevel\x1b[0m should be one of: trace, debug, info, warning, error, critical, or none.`,
+          );
+        }
         this.logLevel = 2;
         break;
     }
-    if(this.config.debug) {this.logLevel = Math.min(1, this.logLevel);}
-    if(this.config.disableLogs) {this.logLevel = 6;}  
+    if (this.config.debug) {
+      this.logLevel = Math.min(1, this.logLevel);
+    }
+    if (this.config.disableLogs) {
+      this.logLevel = 6;
+    }
   }
 
-  performSetValueAction ({ host, data, log, name, logLevel }) {
+  performSetValueAction({ host, data, log, name, logLevel }) {
     sendData({ host, hexData: data, log, name, logLevel });
   }
-  
-  reset () {
+
+  reset() {
     // Clear Multi-hex timeouts
     if (this.intervalTimeoutPromise) {
       this.intervalTimeoutPromise.cancel();
@@ -77,13 +92,15 @@ class BroadlinkRMAccessory extends HomebridgeAccessory {
     }
   }
 
-  async performSend (data, actionCallback) {
+  async performSend(data, actionCallback) {
     const { logLevel, config, host, log, name } = this;
 
     //Error catch
-    if(data === undefined){return}
+    if (data === undefined) {
+      return;
+    }
 
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       sendData({ host, hexData: data, log, name, logLevel });
 
       return;
@@ -104,12 +121,14 @@ class BroadlinkRMAccessory extends HomebridgeAccessory {
     });
   }
 
-  async performRepeatSend (parentData, actionCallback) {
+  async performRepeatSend(parentData, actionCallback) {
     const { host, log, name, logLevel } = this;
     let { data, interval, sendCount } = parentData;
 
-    sendCount = sendCount || 1
-    if (sendCount > 1) {interval = interval || 0.1;}
+    sendCount = sendCount || 1;
+    if (sendCount > 1) {
+      interval = interval || 0.1;
+    }
 
     // Itterate through each hex config in the array
     for (let index = 0; data && index < sendCount; index++) {

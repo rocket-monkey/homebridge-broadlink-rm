@@ -1,13 +1,12 @@
-const uuid = require('uuid')
+const uuid = require("uuid");
 
 class FakeDevice {
-
-  constructor () {
-    const identifier = uuid.v4()
+  constructor() {
+    const identifier = uuid.v4();
 
     this.host = {
       address: identifier,
-      macAddress: identifier
+      macAddress: identifier,
     };
 
     this.callbacks = {};
@@ -17,47 +16,51 @@ class FakeDevice {
     this.resetSentHexCodes();
   }
 
-  resetSentHexCodes () {
-    this.sentHexCodes = []
+  resetSentHexCodes() {
+    this.sentHexCodes = [];
   }
 
-  getSentHexCodeCount () {
-    return this.sentHexCodes.length
+  getSentHexCodeCount() {
+    return this.sentHexCodes.length;
   }
 
-  hasSentCode (hexCode) {
-    return (this.sentHexCodes.indexOf(hexCode) > -1);
+  hasSentCode(hexCode) {
+    return this.sentHexCodes.indexOf(hexCode) > -1;
   }
 
-  hasSentCodes (hexCodes) {
-    let hasSentCodes = true
-    
+  hasSentCodes(hexCodes) {
+    let hasSentCodes = true;
+
     hexCodes.forEach((hexCode) => {
-      if (this.sentHexCodes.indexOf(hexCode) === -1) {hasSentCodes = false}
-    })
-  
-    return hasSentCodes
+      if (this.sentHexCodes.indexOf(hexCode) === -1) {
+        hasSentCodes = false;
+      }
+    });
+
+    return hasSentCodes;
   }
 
-  sendData (hexBufferData, debug, originalHexString) {
-    if (!hexBufferData) {throw new Error('Missing HEX Data')}
+  sendData(hexBufferData, debug, originalHexString) {
+    if (!hexBufferData) {
+      throw new Error("Missing HEX Data");
+    }
 
-    this.sentHexCodes.push(originalHexString)
+    this.sentHexCodes.push(originalHexString);
   }
 
-  on (type, callback) {
+  on(type, callback) {
     this.callbacks[type] = callback;
   }
 
-  sendFakeOnCallback (type, value) {
+  sendFakeOnCallback(type, value) {
     const callback = this.callbacks[type];
 
-    if(callback) {callback(value);}
+    if (callback) {
+      callback(value);
+    }
   }
 
-  checkTemperature () {
-    
-  }
+  checkTemperature() {}
 }
 
-module.exports = FakeDevice
+module.exports = FakeDevice;

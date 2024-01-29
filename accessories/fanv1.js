@@ -1,19 +1,27 @@
-const ServiceManagerTypes = require('../helpers/serviceManagerTypes');
-const FanAccessory = require('./fan');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError');
-const delayForDuration = require('../helpers/delayForDuration');
+const ServiceManagerTypes = require("../helpers/serviceManagerTypes");
+const FanAccessory = require("./fan");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
+const delayForDuration = require("../helpers/delayForDuration");
 
 class Fanv1Accessory extends FanAccessory {
-  setDefaults () {
+  setDefaults() {
     super.setDefaults();
     let { config, state } = this;
-    
+
     // Defaults
-    config.showRotationDirection = config.hideRotationDirection === true || config.showRotationDirection === false ? false : true;
-    config.stepSize = isNaN(config.stepSize) || config.stepSize > 100 || config.stepSize < 1 ? 1 : config.stepSize
-    
+    config.showRotationDirection =
+      config.hideRotationDirection === true ||
+      config.showRotationDirection === false
+        ? false
+        : true;
+    config.stepSize =
+      isNaN(config.stepSize) || config.stepSize > 100 || config.stepSize < 1
+        ? 1
+        : config.stepSize;
+
     if (config.alwaysResetToDefaults) {
-      state.fanSpeed = (config.defaultFanSpeed !== undefined) ? config.defaultFanSpeed : 100;
+      state.fanSpeed =
+        config.defaultFanSpeed !== undefined ? config.defaultFanSpeed : 100;
     }
   }
 
@@ -24,7 +32,7 @@ class Fanv1Accessory extends FanAccessory {
 
       if (state.switchState && enableAutoOff) {
         log(
-          `${name} setSwitchState: (automatically turn off in ${onDuration} seconds)`
+          `${name} setSwitchState: (automatically turn off in ${onDuration} seconds)`,
         );
 
         this.autoOffTimeoutPromise = delayForDuration(onDuration);
@@ -42,7 +50,7 @@ class Fanv1Accessory extends FanAccessory {
 
       if (!state.switchState && enableAutoOn) {
         log(
-          `${name} setSwitchState: (automatically turn on in ${offDuration} seconds)`
+          `${name} setSwitchState: (automatically turn on in ${offDuration} seconds)`,
         );
 
         this.autoOnTimeoutPromise = delayForDuration(offDuration);
@@ -53,16 +61,20 @@ class Fanv1Accessory extends FanAccessory {
     });
   }
 
-  setupServiceManager () {
+  setupServiceManager() {
     const { config, data, name, serviceManagerType } = this;
     const { on, off, counterClockwise, clockwise } = data || {};
 
     this.setDefaults();
 
-    this.serviceManager = new ServiceManagerTypes[serviceManagerType](name, Service.Fan, this.log);
+    this.serviceManager = new ServiceManagerTypes[serviceManagerType](
+      name,
+      Service.Fan,
+      this.log,
+    );
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'switchState',
+      name: "switchState",
       type: Characteristic.On,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
@@ -70,27 +82,27 @@ class Fanv1Accessory extends FanAccessory {
       props: {
         onData: on,
         offData: off,
-        setValuePromise: this.setSwitchState.bind(this)
-      }
+        setValuePromise: this.setSwitchState.bind(this),
+      },
     });
-    
+
     this.serviceManager.addToggleCharacteristic({
-      name: 'fanSpeed',
+      name: "fanSpeed",
       type: Characteristic.RotationSpeed,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
       bind: this,
       props: {
         setValuePromise: this.setFanSpeed.bind(this),
-		    minStep: config.stepSize,
-		    minValue: 0,
-		    maxVlue: 100
-      }
+        minStep: config.stepSize,
+        minValue: 0,
+        maxVlue: 100,
+      },
     });
 
     if (config.showRotationDirection) {
       this.serviceManager.addToggleCharacteristic({
-        name: 'rotationDirection',
+        name: "rotationDirection",
         type: Characteristic.RotationDirection,
         getMethod: this.getCharacteristicValue,
         setMethod: this.setCharacteristicValue,
@@ -98,8 +110,8 @@ class Fanv1Accessory extends FanAccessory {
         props: {
           onData: counterClockwise,
           offData: clockwise,
-          setValuePromise: this.performSend.bind(this)
-        }
+          setValuePromise: this.performSend.bind(this),
+        },
       });
     }
   }

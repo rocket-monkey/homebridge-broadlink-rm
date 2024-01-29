@@ -1,7 +1,7 @@
-const HomebridgePlatform = require('./platform');
-const HomebridgeAccessory = require('./accessory');
+const HomebridgePlatform = require("./platform");
+const HomebridgeAccessory = require("./accessory");
 
 module.exports = {
   HomebridgePlatform,
-  HomebridgeAccessory
-}
+  HomebridgeAccessory,
+};

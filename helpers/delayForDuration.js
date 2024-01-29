@@ -1,4 +1,4 @@
-const { TIMEOUT_CANCELLATION } = require('./errors')
+const { TIMEOUT_CANCELLATION } = require("./errors");
 
 function delayForDuration(duration) {
   let timerID, endTimer, timer;
@@ -7,15 +7,16 @@ function delayForDuration(duration) {
     endTimer = reject;
 
     timerID = setTimeout(() => {
-      resolve('Timeout Complete');
-      this.isCancelled  = true;
+      resolve("Timeout Complete");
+      this.isCancelled = true;
     }, duration * 1000);
-  }
+  };
 
   class Timer extends Promise {
-
-    cancel () {
-      if (this.isCancelled) {return;}
+    cancel() {
+      if (this.isCancelled) {
+        return;
+      }
 
       clearTimeout(timerID);
       this.isCancelled = true;

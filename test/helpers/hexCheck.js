@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const { expect } = require("chai");
 
 const hexCheck = ({ device, codes, count }) => {
   codes = codes || [];
@@ -12,6 +12,6 @@ const hexCheck = ({ device, codes, count }) => {
     const sentHexCodeCount = device.getSentHexCodeCount();
     expect(sentHexCodeCount).to.equal(count);
   }
-}
+};
 
 module.exports = hexCheck;

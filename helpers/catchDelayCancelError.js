@@ -1,16 +1,17 @@
-const { TIMEOUT_CANCELLATION } = require('./errors')
+const { TIMEOUT_CANCELLATION } = require("./errors");
 
 const catchDelayCancelError = async (originalMethod) => {
-
-  let result
+  let result;
 
   try {
-    result = await originalMethod()
+    result = await originalMethod();
   } catch (err) {
-    if (err.message !== TIMEOUT_CANCELLATION) {throw err}
+    if (err.message !== TIMEOUT_CANCELLATION) {
+      throw err;
+    }
   }
 
-  return result
-}
+  return result;
+};
 
-module.exports = catchDelayCancelError
+module.exports = catchDelayCancelError;

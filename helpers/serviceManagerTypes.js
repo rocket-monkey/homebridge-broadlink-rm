@@ -1,7 +1,7 @@
-const FakeServiceManager = require('../test/helpers/fakeServiceManager')
-const ServiceManager = require('./serviceManager')
+const FakeServiceManager = require("../test/helpers/fakeServiceManager");
+const ServiceManager = require("./serviceManager");
 
-module.exports =  {
+module.exports = {
   ServiceManager,
-  FakeServiceManager
-}
+  FakeServiceManager,
+};

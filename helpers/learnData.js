@@ -1,4 +1,4 @@
-const { getDevice } = require('./getDevice');
+const { getDevice } = require("./getDevice");
 
 let closeClient = null;
 let timeout = null;
@@ -6,46 +6,71 @@ let getDataTimeout = null;
 
 const stop = (log, device, logLevel) => {
   // Reset existing learn requests
-  if (!closeClient) {return;}
+  if (!closeClient) {
+    return;
+  }
 
   closeClient();
   closeClient = null;
 
   log(`\x1b[35m[INFO]\x1b[0m Learn Code (stopped)`);
-  if(this.initalDebug !== undefined && device) {device.debug = this.initalDebug;}
-}
+  if (this.initalDebug !== undefined && device) {
+    device.debug = this.initalDebug;
+  }
+};
 
-const start = (host, callback, turnOffCallback, log, disableTimeout, logLevel) => {
-  stop()
+const start = (
+  host,
+  callback,
+  turnOffCallback,
+  log,
+  disableTimeout,
+  logLevel,
+) => {
+  stop();
 
   // Get the Broadlink device
   const device = getDevice({ host, log, learnOnly: true });
   if (!device) {
-    return log(`\x1b[31m[ERROR]\x1b[0m Learn Code (Couldn't learn code, device not found)`);
-  }  
+    return log(
+      `\x1b[31m[ERROR]\x1b[0m Learn Code (Couldn't learn code, device not found)`,
+    );
+  }
 
   this.initalDebug = device.debug;
-  if (logLevel <=1) {device.debug = true;}
+  if (logLevel <= 1) {
+    device.debug = true;
+  }
 
-  if (!device.enterLearning) {return log(`\x1b[31m[ERROR]\x1b[0m Learn Code (IR learning not supported for device at ${host})`);}
+  if (!device.enterLearning) {
+    return log(
+      `\x1b[31m[ERROR]\x1b[0m Learn Code (IR learning not supported for device at ${host})`,
+    );
+  }
 
   let onRawData;
 
   closeClient = (err) => {
-    if (timeout) {clearTimeout(timeout);}
+    if (timeout) {
+      clearTimeout(timeout);
+    }
     timeout = null;
 
-    if (getDataTimeout) {clearTimeout(getDataTimeout);}
+    if (getDataTimeout) {
+      clearTimeout(getDataTimeout);
+    }
     getDataTimeout = null;
 
-    device.removeListener('rawData', onRawData);
+    device.removeListener("rawData", onRawData);
     device.cancelLearn();
   };
 
   onRawData = (message) => {
-    if (!closeClient) {return;}
+    if (!closeClient) {
+      return;
+    }
 
-    const hex = message.toString('hex');
+    const hex = message.toString("hex");
     log(`\x1b[35m[RESULT]\x1b[0m Learn Code (learned hex code: ${hex})`);
     log(`\x1b[35m[INFO]\x1b[0m Learn Code (complete)`);
 
@@ -54,39 +79,47 @@ const start = (host, callback, turnOffCallback, log, disableTimeout, logLevel) =
     turnOffCallback();
   };
 
-  device.on('rawData', onRawData);
+  device.on("rawData", onRawData);
 
-  device.enterLearning()
+  device.enterLearning();
   log(`Learn Code (ready)`);
 
-  if (callback) {callback();}
+  if (callback) {
+    callback();
+  }
 
   getDataTimeout = setTimeout(() => {
     getData(device);
-  }, 1000)
+  }, 1000);
 
-  if (disableTimeout) {return;}
+  if (disableTimeout) {
+    return;
+  }
 
   // Timeout the client after 10 seconds
   timeout = setTimeout(() => {
-    log('\x1b[35m[INFO]\x1b[0m Learn Code (stopped - 10s timeout)');
+    log("\x1b[35m[INFO]\x1b[0m Learn Code (stopped - 10s timeout)");
     device.cancelLearn();
 
     closeClient();
 
     turnOffCallback();
   }, 10000); // 10s
-}
+};
 
 const getData = (device) => {
-  if (getDataTimeout) {clearTimeout(getDataTimeout);}
-  if (!closeClient) {return;}
+  if (getDataTimeout) {
+    clearTimeout(getDataTimeout);
+  }
+  if (!closeClient) {
+    return;
+  }
 
-  device.checkData()
+  device.checkData();
 
   getDataTimeout = setTimeout(() => {
     getData(device);
   }, 1000);
-}
+};
 
-module.exports = { start, stop }
+module.exports = { start, stop };

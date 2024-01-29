@@ -1,21 +1,28 @@
-const ServiceManagerTypes = require('../helpers/serviceManagerTypes');
-const sendData = require('../helpers/sendData');
-const delayForDuration = require('../helpers/delayForDuration');
-const catchDelayCancelError = require('../helpers/catchDelayCancelError');
+const ServiceManagerTypes = require("../helpers/serviceManagerTypes");
+const sendData = require("../helpers/sendData");
+const delayForDuration = require("../helpers/delayForDuration");
+const catchDelayCancelError = require("../helpers/catchDelayCancelError");
 
-const SwitchAccessory = require('./switch');
+const SwitchAccessory = require("./switch");
 
 class SwitchMultiAccessory extends SwitchAccessory {
-
   constructor(log, config = {}, serviceManagerType) {
     super(log, config, serviceManagerType);
 
-    const { data } = this
+    const { data } = this;
 
-    if (!Array.isArray(data)) {return log('The "switch-multi-repeat" type requires the config value for "data" an array of objects.')}
+    if (!Array.isArray(data)) {
+      return log(
+        'The "switch-multi-repeat" type requires the config value for "data" an array of objects.',
+      );
+    }
 
-    const nonObjects = data.filter(obj => typeof obj !== 'object')
-    if (nonObjects.length > 0) {return log('The "switch-multi-repeat" type requires the config value for "data" an array of objects.')}
+    const nonObjects = data.filter((obj) => typeof obj !== "object");
+    if (nonObjects.length > 0) {
+      return log(
+        'The "switch-multi-repeat" type requires the config value for "data" an array of objects.',
+      );
+    }
   }
 
   setDefaults() {
@@ -41,7 +48,7 @@ class SwitchMultiAccessory extends SwitchAccessory {
     }
   }
 
-  checkStateWithPing() { }
+  checkStateWithPing() {}
 
   async setSwitchState(hexData) {
     const { name, config, data, log, state } = this;
@@ -56,7 +63,7 @@ class SwitchMultiAccessory extends SwitchAccessory {
     await catchDelayCancelError(async () => {
       // Itterate through each hex config in the array
       for (let index = 0; index < data.length; index++) {
-        const { pause } = data[index]
+        const { pause } = data[index];
 
         await this.performRepeatSend(data[index]);
 
@@ -94,13 +101,19 @@ class SwitchMultiAccessory extends SwitchAccessory {
     const { data, log, name, config, serviceManagerType } = this;
 
     setTimeout(() => {
-      log(`\x1b[33m[Warning] \x1b[0m${name}: The "switch-multi-repeat" accessory is now deprecated and shall be removed in the future. Check out the updated "switch" documentation at http://github.com/lprhodes/homebridge-broadlink-rm`);
-    }, 1600)
+      log(
+        `\x1b[33m[Warning] \x1b[0m${name}: The "switch-multi-repeat" accessory is now deprecated and shall be removed in the future. Check out the updated "switch" documentation at http://github.com/lprhodes/homebridge-broadlink-rm`,
+      );
+    }, 1600);
 
-    this.serviceManager = new ServiceManagerTypes[serviceManagerType](name, Service.Switch, this.log);
+    this.serviceManager = new ServiceManagerTypes[serviceManagerType](
+      name,
+      Service.Switch,
+      this.log,
+    );
 
     this.serviceManager.addToggleCharacteristic({
-      name: 'switchState',
+      name: "switchState",
       type: Characteristic.On,
       getMethod: this.getCharacteristicValue,
       setMethod: this.setCharacteristicValue,
@@ -108,8 +121,8 @@ class SwitchMultiAccessory extends SwitchAccessory {
       props: {
         onData: Array.isArray(data) ? data : data.on,
         offData: Array.isArray(data) ? undefined : data.off,
-        setValuePromise: this.setSwitchState.bind(this)
-      }
+        setValuePromise: this.setSwitchState.bind(this),
+      },
     });
   }
 }

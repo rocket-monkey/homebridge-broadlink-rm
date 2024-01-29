@@ -7,7 +7,8 @@
   "scripts": {
     "release": "release-it",
     "lint": "eslint -c .eslintrc.json --ignore-pattern=\"node_modules\" --ext js .",
-    "lint-fix": "eslint -c .eslintrc.json --ignore-pattern=\"node_modules\" --ext js --fix ."
+    "lint-fix": "npm run prettier && eslint -c .eslintrc.json --ignore-pattern=\"node_modules\" --ext js --fix .",
+    "prettier": "prettier --write \"**/*.js\""
   },
   "keywords": [
     "homebridge-plugin",
@@ -48,6 +49,7 @@
     "eslint-plugin-no-autofix": "^1.2.3",
     "hap-nodejs": "^0.11.1",
     "mocha": "^10.2.0",
-    "release-it": "^16.1.5"
+    "release-it": "^16.1.5",
+    "prettier": "3.2.2"
   }
 }
