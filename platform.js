@@ -59,7 +59,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       config && config.accessories && Array.isArray(config.accessories)
         ? config.accessories.filter(
             (accessory) =>
-              accessory.type === "learn-ir" || accessory.type === "learn-code",
+              accessory.type === "learn-ir" || accessory.type === "learn-code"
           )
         : [];
 
@@ -86,7 +86,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
     config.accessories.forEach((accessory) => {
       if (!accessory.type) {
         throw new Error(
-          `Each accessory must be configured with a "type". e.g. "switch"`,
+          `Each accessory must be configured with a "type". e.g. "switch"`
         );
       }
       if (accessory.disabled) {
@@ -94,7 +94,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       }
       if (!classTypes[accessory.type]) {
         throw new Error(
-          `homebridge-broadlink-rm doesn't support accessories of type "${accessory.type}".`,
+          `homebridge-broadlink-rm-pro-http doesn't support accessories of type "${accessory.type}".`
         );
       }
 
@@ -116,7 +116,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
 
         if (logLevel <= 1) {
           log(
-            `\x1b[34m[DEBUG]\x1b[0m Adding Accessory ${accessory.type} (${accessory.subType})`,
+            `\x1b[34m[DEBUG]\x1b[0m Adding Accessory ${accessory.type} (${accessory.subType})`
           );
         }
         tvs.push(homeKitAccessory);
@@ -125,7 +125,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
 
       if (logLevel <= 1) {
         log(
-          `\x1b[34m[DEBUG]\x1b[0m Adding Accessory ${accessory.type} (${accessory.subType})`,
+          `\x1b[34m[DEBUG]\x1b[0m Adding Accessory ${accessory.type} (${accessory.subType})`
         );
       }
       this.instances.push(homeKitAccessory);
@@ -136,25 +136,25 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       if (tvs.length > 0) {
         const TV = homebridgeRef.hap.Accessory.Categories.TELEVISION;
         homebridgeRef.publishExternalAccessories(
-          "homebridge-broadlink-rm",
+          "homebridge-broadlink-rm-pro-http",
           tvs.map((tv) =>
-            createAccessory(tv, tv.name, TV, homebridgeRef, tv.subType),
-          ),
+            createAccessory(tv, tv.name, TV, homebridgeRef, tv.subType)
+          )
         );
 
         log("");
         log(
-          `**************************************************************************************************************`,
+          `**************************************************************************************************************`
         );
         log(`You added TVs in your configuration!`);
         log(
-          `Due to a HomeKit limitation you need to add any TVs to the Home app by using the Add Accessory function.`,
+          `Due to a HomeKit limitation you need to add any TVs to the Home app by using the Add Accessory function.`
         );
         log(
-          `There you'll find your TVs and you can use the same PIN as you using for this HomeBridge instance.`,
+          `There you'll find your TVs and you can use the same PIN as you using for this HomeBridge instance.`
         );
         log(
-          `**************************************************************************************************************`,
+          `**************************************************************************************************************`
         );
         log("");
       }
@@ -168,7 +168,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
     if (!hosts) {
       if (logLevel <= 2) {
         log(
-          `\x1b[35m[INFO]\x1b[0m Automatically discovering Broadlink RM devices.`,
+          `\x1b[35m[INFO]\x1b[0m Automatically discovering Broadlink RM devices.`
         );
       }
       discoverDevices(true, log, logLevel, config.deviceDiscoveryTimeout);
@@ -180,29 +180,29 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
 
     if (logLevel <= 2) {
       log(
-        `\x1b[35m[INFO]\x1b[0m Automatic Broadlink RM device discovery has been disabled as the "hosts" option has been set.`,
+        `\x1b[35m[INFO]\x1b[0m Automatic Broadlink RM device discovery has been disabled as the "hosts" option has been set.`
       );
     }
 
     assert.isArray(
       hosts,
-      `\x1b[31m[CONFIG ERROR] \x1b[33mhosts\x1b[0m should be an array of objects.`,
+      `\x1b[31m[CONFIG ERROR] \x1b[33mhosts\x1b[0m should be an array of objects.`
     );
 
     hosts.forEach((host) => {
       assert.isObject(
         host,
-        `\x1b[31m[CONFIG ERROR] \x1b[0m Each item in the \x1b[33mhosts\x1b[0m array should be an object.`,
+        `\x1b[31m[CONFIG ERROR] \x1b[0m Each item in the \x1b[33mhosts\x1b[0m array should be an object.`
       );
 
       const { address, isRFSupported, isRM4, mac } = host;
       assert(
         address,
-        `\x1b[31m[CONFIG ERROR] \x1b[0m Each object in the \x1b[33mhosts\x1b[0m option should contain a value for \x1b[33maddress\x1b[0m (e.g. "192.168.1.23").`,
+        `\x1b[31m[CONFIG ERROR] \x1b[0m Each object in the \x1b[33mhosts\x1b[0m option should contain a value for \x1b[33maddress\x1b[0m (e.g. "192.168.1.23").`
       );
       assert(
         mac,
-        `\x1b[31m[CONFIG ERROR] \x1b[0m Each object in the \x1b[33mhosts\x1b[0m option should contain a unique value for \x1b[33mmac\x1b[0m (e.g. "34:ea:34:e7:d7:28").`,
+        `\x1b[31m[CONFIG ERROR] \x1b[0m Each object in the \x1b[33mhosts\x1b[0m option should contain a unique value for \x1b[33mmac\x1b[0m (e.g. "34:ea:34:e7:d7:28").`
       );
 
       //Create manual device type
@@ -220,11 +220,11 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       res.setHeader("Access-Control-Allow-Origin", "*"); // This allows all origins
       res.setHeader(
         "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS, PUT, PATCH, DELETE",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
       );
       res.setHeader(
         "Access-Control-Allow-Headers",
-        "X-Requested-With,content-type",
+        "X-Requested-With,content-type"
       );
       res.setHeader("Access-Control-Allow-Credentials", "true");
 
@@ -238,7 +238,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       this.handleRequest(req, res);
     });
     this.requestServer.listen(18084, () =>
-      this.log.info("Http server listening on 18084..."),
+      this.log.info("Http server listening on 18084...")
     );
   }
 
@@ -278,7 +278,7 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
       (config.hideWelcomeMessage || config.isUnitTest || this.logLevel >= 4)
     ) {
       log(
-        `\x1b[35m[INFO]\x1b[0m Running Homebridge Broadlink RM Plugin version \x1b[32m${npmPackage.version}\x1b[0m`,
+        `\x1b[35m[INFO]\x1b[0m Running Homebridge Broadlink RM Plugin version \x1b[32m${npmPackage.version}\x1b[0m`
       );
 
       return;
@@ -287,29 +287,29 @@ const BroadlinkRMPlatform = class extends HomebridgePlatform {
     setTimeout(() => {
       log("");
       log(
-        `**************************************************************************************************************`,
+        `**************************************************************************************************************`
       );
       log(
-        `** Welcome to version \x1b[32m${npmPackage.version}\x1b[0m of the \x1b[34mHomebridge Broadlink RM Plugin\x1b[0m!`,
+        `** Welcome to version \x1b[32m${npmPackage.version}\x1b[0m of the \x1b[34mHomebridge Broadlink RM Plugin\x1b[0m!`
       );
       log("** ");
       log(
-        `** Find out what's in the latest release here: \x1b[4mhttps://github.com/kiwi-cam/homebridge-broadlink-rm/blob/master/CHANGELOG.md\x1b[0m`,
+        `** Find out what's in the latest release here: \x1b[4mhttps://github.com/kiwi-cam/homebridge-broadlink-rm/blob/master/CHANGELOG.md\x1b[0m`
       );
       log(`** `);
       log(
-        `** If you like this plugin then please star it on GitHub or better yet`,
+        `** If you like this plugin then please star it on GitHub or better yet`
       );
       log(
-        `** buy me a drink using Paypal \x1b[4mhttps://paypal.me/kiwicamRM\x1b[0m.`,
-      );
-      log(`**`);
-      log(
-        `** You can disable this message by adding "hideWelcomeMessage": true to the config (see config-sample.json).`,
+        `** buy me a drink using Paypal \x1b[4mhttps://paypal.me/kiwicamRM\x1b[0m.`
       );
       log(`**`);
       log(
-        `**************************************************************************************************************`,
+        `** You can disable this message by adding "hideWelcomeMessage": true to the config (see config-sample.json).`
+      );
+      log(`**`);
+      log(
+        `**************************************************************************************************************`
       );
       log("");
     }, 1500);

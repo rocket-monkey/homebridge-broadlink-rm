@@ -10,8 +10,8 @@ module.exports = (homebridge) => {
   BroadlinkRMPlatform.setHomebridge(homebridge);
 
   homebridge.registerPlatform(
-    "homebridge-broadlink-rm",
-    "BroadlinkRM",
-    BroadlinkRMPlatform,
+    "homebridge-broadlink-rm-pro-http",
+    "BroadlinkRMHTTP",
+    BroadlinkRMPlatform
   );
 };
