@@ -14,7 +14,7 @@ Thank you!
 ## Installation
 
 This plugin can be added via the Web interface, or if you perfer the terminal:
-   `npm install -g homebridge-broadlink-rm-pro`
+   `npm install -g homebridge-broadlink-rm-pro-http`
 For more information, refer to the [documentation](https://broadlink.kiwicam.nz/#installation).
 
 ## Documentation
