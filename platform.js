@@ -36,7 +36,7 @@ const classTypes = {
 
 let homebridgeRef;
 
-const BroadlinkRMPlatform = class extends HomebridgePlatform {
+const BroadlinkRMPlatformHttp = class extends HomebridgePlatform {
   constructor(log, config = {}) {
     super(log, config, homebridgeRef);
     this.instances = [];

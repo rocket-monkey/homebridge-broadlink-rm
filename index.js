@@ -1,4 +1,4 @@
-const BroadlinkRMPlatform = require("./platform");
+const BroadlinkRMPlatformHttp = require("./platform");
 const fakegatoHistory = require("fakegato-history");
 
 module.exports = (homebridge) => {
@@ -7,11 +7,11 @@ module.exports = (homebridge) => {
   global.Service = homebridge.hap.Service;
   global.Characteristic = homebridge.hap.Characteristic;
 
-  BroadlinkRMPlatform.setHomebridge(homebridge);
+  BroadlinkRMPlatformHttp.setHomebridge(homebridge);
 
   homebridge.registerPlatform(
     "homebridge-broadlink-rm-pro-http",
-    "BroadlinkRM",
-    BroadlinkRMPlatform
+    "BroadlinkRMHttp",
+    BroadlinkRMPlatformHttp
   );
 };
